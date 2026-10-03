@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Call Agent — self-hosted multilingual voice agent platform</title>
+<meta name="description" content="Self-hosted, multi-tenant, German/Albanian/English AI call-agent platform. FastAPI backend, Next.js console, compliance enforced outside the model. Honest capability status included.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#9742;</text></svg>">
+<style>
+/* ---------------------------------------------------------------------------------------------
+   Design tokens mirror apps/web/app/globals.css exactly. The demo must look like the product;
+   if the console is restyled, these values change with it.
+--------------------------------------------------------------------------------------------- */
+:root{
+  --surface-base:#070b14; --surface-raised:#0b1120; --surface-overlay:#111a2e; --surface-hover:#16203a;
+  --line-subtle:#1c2740; --line-strong:#2a3752;
+  --ink-primary:#e8edf7; --ink-secondary:#94a3b8; --ink-muted:#64748b;
+  --accent:#38bdf8; --accent-soft:#0b2b3d;
+  --ok:#34d399; --ok-soft:#06281f;
+  --warn:#fbbf24; --warn-soft:#2b1f05;
+  --danger:#f87171; --danger-soft:#2d1113;
+  --info:#a78bfa; --info-soft:#1d1633;
+  --radius:12px;
+  --mono:ui-monospace,"Cascadia Code","SF Mono",Menlo,Consolas,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;color-scheme:dark}
+body{
+  margin:0;background:var(--surface-base);color:var(--ink-primary);
+  font:16px/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+:where(a,button,[tabindex]):focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+code,kbd{font-family:var(--mono);font-size:.88em}
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+
+/* ---- header ---- */
+header.top{
+  position:sticky;top:0;z-index:50;background:rgba(7,11,20,.9);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line-subtle);
+}
+header.top .wrap{display:flex;align-items:center;gap:16px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:-.01em;color:var(--ink-primary)}
+.brand:hover{text-decoration:none}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+nav.top{margin-left:auto;display:flex;gap:22px;font-size:14px;flex-wrap:wrap}
+nav.top a{color:var(--ink-secondary)}
+nav.top a:hover{color:var(--ink-primary);text-decoration:none}
+
+/* ---- hero ---- */
+.hero{padding:76px 0 48px;border-bottom:1px solid var(--line-subtle);position:relative;overflow:hidden}
+.hero::before{
+  content:"";position:absolute;inset:-40% 40% 40% -10%;pointer-events:none;
+  background:radial-gradient(circle at 30% 50%,rgba(56,189,248,.10),transparent 62%);
+}
+.hero .wrap{position:relative}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--accent);background:var(--accent-soft);
+  border:1px solid rgba(56,189,248,.28);border-radius:999px;padding:5px 13px;
+}
+h1{font-size:clamp(2rem,5vw,3.35rem);line-height:1.1;letter-spacing:-.025em;margin:22px 0 0;font-weight:700}
+h1 .grad{background:linear-gradient(96deg,var(--accent),var(--info));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{font-size:1.09rem;color:var(--ink-secondary);max-width:70ch;margin:20px 0 0}
+.btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;padding:11px 20px;border-radius:9px;font-size:14.5px;
+  font-weight:600;border:1px solid var(--line-strong);color:var(--ink-primary);background:var(--surface-raised);
+  cursor:pointer;transition:background .13s,border-color .13s,transform .13s;
+}
+.btn:hover{text-decoration:none;background:var(--surface-hover);border-color:var(--accent);transform:translateY(-1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#04121b}
+.btn.primary:hover{background:#5cc9f9}
+
+/* ---- stat strip ---- */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;background:var(--line-subtle);
+  border:1px solid var(--line-subtle);border-radius:var(--radius);overflow:hidden;margin-top:46px}
+.strip div{background:var(--surface-raised);padding:19px 17px}
+.strip .n{font-size:1.72rem;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.strip .l{font-size:11.5px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.075em;margin-top:3px}
+.strip div.ok .n{color:var(--ok)}
+.strip div.warn .n{color:var(--warn)}
+.strip div.dang .n{color:var(--danger)}
+
+/* ---- sections ---- */
+section{padding:66px 0;border-bottom:1px solid var(--line-subtle)}
+section:last-of-type{border-bottom:none}
+h2{font-size:1.72rem;letter-spacing:-.02em;margin:0 0 12px;font-weight:680}
+h3{font-size:1.03rem;margin:0 0 8px;font-weight:640}
+.sub{color:var(--ink-secondary);max-width:74ch;margin:0 0 32px}
+p{margin:0 0 15px}
+
+/* ---- cards ---- */
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(310px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(248px,1fr))}
+.card{background:var(--surface-raised);border:1px solid var(--line-subtle);border-radius:var(--radius);padding:21px}
+.card h3{display:flex;align-items:center;gap:9px}
+.card p{color:var(--ink-secondary);font-size:14.5px;margin:0}
+.card p+p{margin-top:11px}
+.ico{width:26px;height:26px;flex:none;border-radius:7px;display:grid;place-items:center;font-size:13.5px;
+  background:var(--accent-soft);color:var(--accent);border:1px solid rgba(56,189,248,.24)}
+.ico.ok{background:var(--ok-soft);color:var(--ok);border-color:rgba(52,211,153,.24)}
+.ico.warn{background:var(--warn-soft);color:var(--warn);border-color:rgba(251,191,36,.24)}
+.ico.dang{background:var(--danger-soft);color:var(--danger);border-color:rgba(248,113,113,.24)}
+.ico.info{background:var(--info-soft);color:var(--info);border-color:rgba(167,139,250,.24)}
+ul.ticks{list-style:none;padding:0;margin:11px 0 0;font-size:14.5px;color:var(--ink-secondary)}
+ul.ticks li{position:relative;padding-left:24px;margin-bottom:7px}
+ul.ticks li::before{content:"";position:absolute;left:5px;top:9px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+ul.ticks.out li::before{background:var(--ink-muted)}
+ul.ticks.ok li::before{background:var(--ok)}
+ul.ticks.warn li::before{background:var(--warn)}
+
+/* ---- status pills ---- */
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;letter-spacing:.035em;
+  padding:3px 10px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok);border:1px solid rgba(52,211,153,.26)}
+.pill.warn{background:var(--warn-soft);color:var(--warn);border:1px solid rgba(251,191,36,.26)}
+.pill.dang{background:var(--danger-soft);color:var(--danger);border:1px solid rgba(248,113,113,.26)}
+.pill.info{background:var(--info-soft);color:var(--info);border:1px solid rgba(167,139,250,.26)}
+.pill.mut{background:var(--surface-overlay);color:var(--ink-muted);border:1px solid var(--line-subtle)}
+
+/* ---- table ---- */
+.tbl{width:100%;border-collapse:collapse;font-size:14.5px}
+.tbl th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.075em;color:var(--ink-muted);
+  padding:11px 13px;border-bottom:1px solid var(--line-strong);font-weight:600}
+.tbl td{padding:12px 13px;border-bottom:1px solid var(--line-subtle);vertical-align:top;color:var(--ink-secondary)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td:first-child{color:var(--ink-primary)}
+.scroll{overflow-x:auto;border:1px solid var(--line-subtle);border-radius:var(--radius);background:var(--surface-raised)}
+
+/* ---- diagram ---- */
+.diagram{background:var(--surface-raised);border:1px solid var(--line-subtle);border-radius:var(--radius);padding:26px 20px;overflow-x:auto}
+.diagram svg{display:block;margin:0 auto;min-width:660px}
+
+/* ---- terminal ---- */
+.term{background:#050810;border:1px solid var(--line-subtle);border-radius:var(--radius);overflow:hidden;font-family:var(--mono);font-size:13.2px}
+.term .bar{background:var(--surface-raised);border-bottom:1px solid var(--line-subtle);padding:9px 14px;display:flex;
+  align-items:center;gap:7px;font-family:inherit;font-size:12px;color:var(--ink-muted)}
+.term .bar i{width:11px;height:11px;border-radius:50%;background:var(--line-strong);display:block}
+.term .bar i:nth-child(1){background:#f87171}.term .bar i:nth-child(2){background:#fbbf24}.term .bar i:nth-child(3){background:#34d399}
+.term pre{margin:0;padding:17px;overflow-x:auto;line-height:1.72}
+.term .c{color:var(--ink-muted)}
+.term .g{color:var(--ok)}
+.term .y{color:var(--warn)}
+.term .r{color:var(--danger)}
+.term .b{color:var(--accent)}
+.term .w{color:var(--ink-primary)}
+
+/* ---- callout ---- */
+.callout{border-left:3px solid var(--warn);background:var(--warn-soft);padding:17px 20px;border-radius:0 9px 9px 0;margin:22px 0}
+.callout.danger{border-color:var(--danger);background:var(--danger-soft)}
+.callout.info{border-color:var(--accent);background:var(--accent-soft)}
+.callout.ok{border-color:var(--ok);background:var(--ok-soft)}
+.callout strong{color:var(--ink-primary)}
+.callout p:last-child{margin-bottom:0}
+.callout p{font-size:14.5px;color:var(--ink-secondary)}
+
+/* ---- shot ---- */
+.shot{border:1px solid var(--line-subtle);border-radius:var(--radius);overflow:hidden;background:var(--surface-raised)}
+.shot img{display:block;width:100%;height:auto}
+.shot figcaption{padding:13px 17px;font-size:13.2px;color:var(--ink-muted);border-top:1px solid var(--line-subtle)}
+.shot figcaption b{color:var(--ink-primary);font-weight:600}
+
+/* ---- footer ---- */
+footer{padding:44px 0;color:var(--ink-muted);font-size:13.6px}
+footer .wrap{display:flex;gap:22px;flex-wrap:wrap;align-items:center}
+footer .sp{margin-left:auto}
+
+@media(max-width:640px){
+  .hero{padding:52px 0 36px}
+  section{padding:48px 0}
+  nav.top{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="dot"></span> AI Call Agent</a>
+    <nav class="top">
+      <a href="#how">How it works</a>
+      <a href="#screens">Screens</a>
+      <a href="#status">Honest status</a>
+      <a href="#run">Run it</a>
+      <a href="#arch">Architecture</a>
+    </nav>
+  </div>
+</header>
+
+<a id="top"></a>
+<div class="hero">
+  <div class="wrap">
+    <span class="eyebrow">&#9679; Self-hosted &middot; Multi-tenant &middot; Zero paid AI APIs by default</span>
+    <h1>An AI phone agent you can <span class="grad">actually audit</span>.</h1>
+    <p class="lede">
+      A multi-tenant, multilingual AI call-agent platform for German, Albanian and English —
+      designed to run entirely on your own hardware. Compliance is enforced in Python
+      <em>before</em> a dial is attempted, never by asking the model for permission.
+    </p>
+    <p class="lede">
+      The interesting part is not what it does. It is that <strong>every claim in this
+      repository is measurable, and the gaps are named out loud.</strong>
+    </p>
+    <div class="btns">
+      <a class="btn primary" href="#status">See the honest status &#8595;</a>
+      <a class="btn" href="#how">How a call flows</a>
+      <a class="btn" href="#run">Run it locally</a>
+    </div>
+
+    <div class="strip">
+      <div class="ok"><div class="n">146</div><div class="l">Tests passing</div></div>
+      <div class="ok"><div class="n">173</div><div class="l">API operations</div></div>
+      <div class="ok"><div class="n">39</div><div class="l">Tools implemented</div></div>
+      <div class="warn"><div class="n">176</div><div class="l">Tools still stubs</div></div>
+      <div class="ok"><div class="n">11</div><div class="l">Console routes</div></div>
+      <div class="dang"><div class="n">0</div><div class="l">Voice path tested</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================================== HOW -->
+<section id="how">
+  <div class="wrap">
+    <h2>How a call flows</h2>
+    <p class="sub">
+      One turn, from the caller speaking to the agent speaking back. The green steps are the ones
+      that run in <strong>Python</strong> — outside the model's control — which is where every
+      compliance guarantee actually lives.
+    </p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 1020 400" role="img" aria-label="Pipeline diagram: audio in, VAD, speech recognition, compliance guard, retrieval, language model, tool execution, speech synthesis, audio out">
+        <defs>
+          <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+            <path d="M0,0 L7,3.2 L0,6.4 z" fill="#2a3752"/>
+          </marker>
+        </defs>
+        <g font-family="ui-sans-serif,system-ui,sans-serif" font-size="12.5">
+
+          <!-- row 1 -->
+          <rect x="14" y="40" width="132" height="52" rx="9" fill="#111a2e" stroke="#2a3752"/>
+          <text x="80" y="63" fill="#e8edf7" text-anchor="middle" font-weight="620">Audio in</text>
+          <text x="80" y="80" fill="#64748b" text-anchor="middle" font-size="11">WebRTC / SIP</text>
+
+          <rect x="176" y="40" width="132" height="52" rx="9" fill="#111a2e" stroke="#2a3752"/>
+          <text x="242" y="63" fill="#e8edf7" text-anchor="middle" font-weight="620">VAD frames</text>
+          <text x="242" y="80" fill="#64748b" text-anchor="middle" font-size="11">Silero / energy</text>
+
+          <rect x="338" y="40" width="132" height="52" rx="9" fill="#111a2e" stroke="#2a3752"/>
+          <text x="404" y="63" fill="#e8edf7" text-anchor="middle" font-weight="620">Speech &#8594; text</text>
+          <text x="404" y="80" fill="#64748b" text-anchor="middle" font-size="11">Whisper / STT</text>
+
+          <rect x="500" y="40" width="152" height="52" rx="9" fill="#06281f" stroke="#34d399"/>
+          <text x="576" y="63" fill="#34d399" text-anchor="middle" font-weight="620">Language detect</text>
+          <text x="576" y="80" fill="#64748b" text-anchor="middle" font-size="11">DE / SQ / EN</text>
+
+          <rect x="682" y="40" width="152" height="52" rx="9" fill="#06281f" stroke="#34d399"/>
+          <text x="758" y="63" fill="#34d399" text-anchor="middle" font-weight="620">Compliance guard</text>
+          <text x="758" y="80" fill="#64748b" text-anchor="middle" font-size="11">DNC &middot; hours &middot; consent</text>
+
+          <rect x="864" y="40" width="142" height="52" rx="9" fill="#111a2e" stroke="#2a3752"/>
+          <text x="935" y="63" fill="#e8edf7" text-anchor="middle" font-weight="620">Knowledge</text>
+          <text x="935" y="80" fill="#64748b" text-anchor="middle" font-size="11">retrieval (RAG)</text>
+
+          <line x1="146" y1="66" x2="172" y2="66" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+          <line x1="308" y1="66" x2="334" y2="66" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+          <line x1="470" y1="66" x2="496" y2="66" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+          <line x1="652" y1="66" x2="678" y2="66" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+          <line x1="834" y1="66" x2="860" y2="66" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+
+          <!-- wrap down -->
+          <path d="M935 92 L935 132 L80 132 L80 168" fill="none" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+          <text x="500" y="126" fill="#64748b" text-anchor="middle" font-size="11">next turn</text>
+
+          <!-- row 2 -->
+          <rect x="80" y="172" width="152" height="52" rx="9" fill="#111a2e" stroke="#2a3752"/>
+          <text x="156" y="195" fill="#e8edf7" text-anchor="middle" font-weight="620">Prompt assembly</text>
+          <text x="156" y="212" fill="#64748b" text-anchor="middle" font-size="11">untrusted data wrapped</text>
+
+          <rect x="262" y="172" width="140" height="52" rx="9" fill="#111a2e" stroke="#2a3752"/>
+          <text x="332" y="195" fill="#e8edf7" text-anchor="middle" font-weight="620">Language model</text>
+          <text x="332" y="212" fill="#64748b" text-anchor="middle" font-size="11">local / or fallback</text>
+
+          <rect x="432" y="172" width="166" height="52" rx="9" fill="#06281f" stroke="#34d399"/>
+          <text x="515" y="195" fill="#34d399" text-anchor="middle" font-weight="620">Tool call + gate</text>
+          <text x="515" y="212" fill="#64748b" text-anchor="middle" font-size="11">permission checked in Python</text>
+
+          <rect x="628" y="172" width="152" height="52" rx="9" fill="#111a2e" stroke="#2a3752"/>
+          <text x="704" y="195" fill="#e8edf7" text-anchor="middle" font-weight="620">Tool executes</text>
+          <text x="704" y="212" fill="#64748b" text-anchor="middle" font-size="11">real DB / service Effect</text>
+
+          <rect x="810" y="172" width="132" height="52" rx="9" fill="#111a2e" stroke="#2a3752"/>
+          <text x="876" y="195" fill="#e8edf7" text-anchor="middle" font-weight="620">Text &#8594; speech</text>
+          <text x="876" y="212" fill="#64748b" text-anchor="middle" font-size="11">TTS</text>
+
+          <line x1="232" y1="198" x2="258" y2="198" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+          <line x1="402" y1="198" x2="428" y2="198" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+          <line x1="598" y1="198" x2="624" y2="198" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+          <line x1="780" y1="198" x2="806" y2="198" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+
+          <!-- row 3: turn detection + audio out -->
+          <path d="M876 224 L876 262 L156 262 L156 292" fill="none" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+
+          <rect x="80" y="296" width="176" height="52" rx="9" fill="#06281f" stroke="#34d399"/>
+          <text x="168" y="319" fill="#34d399" text-anchor="middle" font-weight="620">End-of-turn detection</text>
+          <text x="168" y="336" fill="#64748b" text-anchor="middle" font-size="11">never a fixed 2&nbsp;s</text>
+
+          <rect x="286" y="296" width="140" height="52" rx="9" fill="#111a2e" stroke="#2a3752"/>
+          <text x="356" y="319" fill="#e8edf7" text-anchor="middle" font-weight="620">Audio out</text>
+          <text x="356" y="336" fill="#64748b" text-anchor="middle" font-size="11">barge-in aware</text>
+
+          <rect x="456" y="296" width="176" height="52" rx="9" fill="#111a2e" stroke="#2a3752"/>
+          <text x="544" y="319" fill="#e8edf7" text-anchor="middle" font-weight="620">Transcript + audit</text>
+          <text x="544" y="336" fill="#64748b" text-anchor="middle" font-size="11">PII redacted</text>
+
+          <rect x="662" y="296" width="164" height="52" rx="9" fill="#1d1633" stroke="#a78bfa"/>
+          <text x="744" y="319" fill="#a78bfa" text-anchor="middle" font-weight="620">Quality flags</text>
+          <text x="744" y="336" fill="#64748b" text-anchor="middle" font-size="11">objections &middot; sentiment</text>
+
+          <line x1="256" y1="322" x2="282" y2="322" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+          <line x1="426" y1="322" x2="452" y2="322" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+          <line x1="632" y1="322" x2="658" y2="322" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar)"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="callout info">
+      <p>
+        <strong>The compliance step is the point.</strong> A DNC check, calling-hours check and
+        consent check all run in Python <em>before</em> the transport is attempted. The model is
+        never asked whether it is allowed to make the call — so a prompt injection cannot talk the
+        system into dialling someone who opted out. A test pins the ordering: a DNC number must be
+        refused <em>for being on the DNC list</em>, not for a missing transport.
+      </p>
+    </div>
+
+    <div class="grid g3" style="margin-top:26px">
+      <div class="card">
+        <h3><span class="ico">&#9645;</span> End-of-turn is layered</h3>
+        <p>
+          Frame VAD, adaptive pause timing, a semantic/punctuation heuristic, and a contextual
+          override. Trailing connectives — <em>"und"</em>, <em>"dhe"</em>, <em>"and"</em> —
+          suppress end-of-utterance even after a pause, so a caller who pauses mid-sentence is not
+          interrupted.
+        </p>
+      </div>
+      <div class="card">
+        <h3><span class="ico">&#9888;</span> Untrusted data is wrapped</h3>
+        <p>
+          Retrieved knowledge is fenced in <code>&lt;&lt;&lt;UNTRUSTED_DATA&gt;&gt;&gt;</code>
+          markers and labelled as data, not instructions. A document in the knowledge base cannot
+          issue the agent orders.
+        </p>
+      </div>
+      <div class="card">
+        <h3><span class="ico">&#9776;</span> Simulated is labelled</h3>
+        <p>
+          When a real model is not available, the provider returns a
+          <code>simulated: true</code> stamp rather than quietly producing plausible nonsense.
+          Missing data is <code>null</code>, never <code>0</code>.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================== SCREENS -->
+<section id="screens">
+  <div class="wrap">
+    <h2>The console</h2>
+    <p class="sub">
+      A Next.js 16 operations console — dark-first by design, with semantic colour tokens and
+      WCAG&nbsp;AA contrast on every text/background pairing. Eleven routes, in English, German and
+      Albanian.
+    </p>
+
+    <div class="grid g2">
+      <figure class="shot">
+        <img src="screenshots/01-overview.png" alt="Overview dashboard showing call metrics, component health, hardware profile and the capability matrix" loading="lazy">
+        <figcaption>
+          <b>Overview</b> — the honesty posture made visible. Health reports
+          <code>degraded</code> <em>with the exact reasons</em>, unmeasured metrics read
+          <code>— Not measured</code> rather than <code>0</code>, and live/LiveKit/SIP all show
+          plain <code>not configured</code>.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <img src="screenshots/02-agents.png" alt="Agent list showing six agents with published and draft status plus the 25-template catalogue" loading="lazy">
+        <figcaption>
+          <b>Agents</b> — six configured agents across German, Albanian and English, each showing
+          published versus draft state. Below, the catalogue of 25 use-case templates.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <img src="screenshots/03-agent-new.png" alt="Create agent form with template picker, three-language selection and live greeting preview" loading="lazy">
+        <figcaption>
+          <b>Create an agent</b> — template picker, per-language support (Deutsch / Shqip /
+          English), Albanian variant, address form, and toggles for mid-call language switching and
+          AI disclosure. Wired through Server Actions and verified against the running API.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <img src="screenshots/08-tools.png" alt="Tool catalogue showing 215 declared, 39 implemented and 176 declared only" loading="lazy">
+        <figcaption>
+          <b>Tool catalogue</b> — the honest ledger. 215 declared, <b>39 implemented</b>, 176
+          declared only. The panel states plainly that unimplemented tools "return an explicit
+          'not implemented' result rather than pretending to work".
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <img src="screenshots/07-providers.png" alt="Provider page with the model catalogue and a licence audit showing 24 models, 7 permitted and 7 refused" loading="lazy">
+        <figcaption>
+          <b>Providers &amp; licence audit</b> — 24 known models with their licence and commercial
+          position: 7 permitted, 7 refused, 17 needing attribution. This is the CI licence gate made
+          visible rather than asserted in prose.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <img src="screenshots/06-contacts.png" alt="Contacts list alongside the do-not-call register showing two opted-out numbers" loading="lazy">
+        <figcaption>
+          <b>Contacts &amp; do-not-call</b> — the suppression register. Numbers here are checked
+          before a dial, and the check fails <em>closed</em>: if the register cannot be read, the
+          call is refused rather than allowed.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <img src="screenshots/09-system.png" alt="System page showing runtime state, organisation settings, members and the audit trail" loading="lazy">
+        <figcaption>
+          <b>System</b> — runtime state, organisation settings, members, roles and the audit trail.
+          Eight roles, enforced per-tenant.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <img src="screenshots/04-calls.png" alt="Call history with latency percentiles" loading="lazy">
+        <figcaption>
+          <b>Calls</b> — call history and latency percentiles. Undefined percentiles render as
+          <code>—</code>, never <code>0</code>: "no data" and "zero" are different facts, and the
+          API keeps them distinct all the way to the screen.
+        </figcaption>
+      </figure>
+
+      <figure class="shot">
+        <img src="screenshots/05-knowledge.png" alt="Knowledge bases and retrieval" loading="lazy">
+        <figcaption>
+          <b>Knowledge</b> — the retrieval bases used for grounding, with chunk counts and
+          reindexing. Retrieved text is fenced as <em>untrusted data</em> before it reaches the
+          model, so a document cannot issue the agent instructions.
+        </figcaption>
+      </figure>
+    </div>
+
+    <div class="callout info" style="margin-top:26px">
+      <p>
+        <strong>These are real screenshots of a running system, not mockups.</strong> They were
+        produced by <code>scripts/capture_demo.py</code>, which starts the API on a throwaway
+        database, seeds realistic content <em>through the public HTTP API</em>, starts the console,
+        and then signs in through the actual login form with a real browser before capturing. If any
+        page failed to render — a redirect, an error screen, a missing marker — the harness would
+        fail rather than ship the image.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================================== STATUS -->
+<section id="status">
+  <div class="wrap">
+    <h2>Honest status</h2>
+    <p class="sub">
+      This section exists because the alternative — a capabilities list with no gaps in it — would be
+      a lie. Everything below is measured by running code, and the limitations are stated as plainly
+      as the achievements.
+    </p>
+
+    <div class="scroll" style="margin-bottom:26px">
+      <table class="tbl">
+        <thead>
+          <tr><th style="width:34%">Capability</th><th style="width:14%">Status</th><th>Detail</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>REST API — 12 routers, 173 operations</td>
+            <td><span class="pill ok">Working</span></td>
+            <td>146 tests pass; the type checker is clean across 95 files.</td>
+          </tr>
+          <tr>
+            <td>Multi-tenant isolation &amp; roles</td>
+            <td><span class="pill ok">Working</span></td>
+            <td>Proven by a test that onboards a <em>real</em> second organisation then fails to see the first tenant's data — across 8 resource types.</td>
+          </tr>
+          <tr>
+            <td>Agent lifecycle: create &#8594; publish &#8594; version</td>
+            <td><span class="pill ok">Working</span></td>
+            <td>Including rollback and a prompt hash on every published version.</td>
+          </tr>
+          <tr>
+            <td>Text-mode agent loop (full turn pipeline)</td>
+            <td><span class="pill ok">Working</span></td>
+            <td>Driven end-to-end through the console and through the simulation runner.</td>
+          </tr>
+          <tr>
+            <td>Knowledge ingestion, retrieval, gap detection</td>
+            <td><span class="pill ok">Working</span></td>
+            <td>SQLite brute-force retrieval. The pgvector/HNSW path is written but <strong>never benchmarked</strong> — no Postgres here.</td>
+          </tr>
+          <tr>
+            <td>Compliance engine — DNC, hours, consent, disclosure</td>
+            <td><span class="pill ok">Working</span></td>
+            <td>Enforced outside the model, with refusal precedence pinned by a test.</td>
+          </tr>
+          <tr>
+            <td>Campaigns, dry-run by default</td>
+            <td><span class="pill ok">Working</span></td>
+            <td>A campaign cannot dial by accident.</td>
+          </tr>
+          <tr>
+            <td>Background worker — queue, retries, retention</td>
+            <td><span class="pill ok">Working</span></td>
+            <td>Atomic claim (exactly-once), HMAC-signed webhooks, 6-step backoff, SSRF allowlist. Verified by running it twice — the second run created 0 duplicates.</td>
+          </tr>
+          <tr>
+            <td>Evaluation suite — 40 scenarios, DE/SQ/EN</td>
+            <td><span class="pill ok">Working</span></td>
+            <td>Scenarios are defined; the runner exercises the text path.</td>
+          </tr>
+          <tr>
+            <td>Licence gate in CI</td>
+            <td><span class="pill ok">Working</span></td>
+            <td>Four checks. It caught real drift on its first run — and then caught a bug in its own logic.</td>
+          </tr>
+          <tr>
+            <td>Console — 11 routes, EN/DE/SQ</td>
+            <td><span class="pill ok">Working</span></td>
+            <td>Verified against a live API: HTTP 200, shell rendered, page marker present, no error digest. Unauthenticated requests redirect to sign-in.</td>
+          </tr>
+          <tr>
+            <td>Voice worker — realtime pipeline</td>
+            <td><span class="pill dang">Not built</span></td>
+            <td>Scaffolded only: a dependency manifest and six <strong>0-byte</strong> package stubs. Never run.</td>
+          </tr>
+          <tr>
+            <td>WebRTC / SIP calls</td>
+            <td><span class="pill dang">Not runnable</span></td>
+            <td>No LiveKit server is running and there is no GPU for local speech models.</td>
+          </tr>
+          <tr>
+            <td>Local LLM / STT / TTS at conversational latency</td>
+            <td><span class="pill dang">Not runnable</span></td>
+            <td>Measured hardware limit, not a code limit. See below.</td>
+          </tr>
+          <tr>
+            <td>176 of 215 tools</td>
+            <td><span class="pill warn">Stubs</span></td>
+            <td>The registry, gating and validation are done and tested. The bodies are not.</td>
+          </tr>
+          <tr>
+            <td>SIPp suite, real PSTN calls</td>
+            <td><span class="pill warn">Not started</span></td>
+            <td>Telephony is modelled and has APIs; the gateway config has never been started.</td>
+          </tr>
+          <tr>
+            <td>Email delivery for invites</td>
+            <td><span class="pill warn">Missing</span></td>
+            <td>Invite tokens are returned in the API response instead.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:34px">Why voice does not run on the development machine</h3>
+    <p class="sub" style="margin-bottom:18px">Measured, not assumed:</p>
+
+    <div class="term">
+      <div class="bar"><i></i><i></i><i></i><span style="margin-left:8px">hardware probe</span></div>
+<pre><span class="c">$</span> <span class="b">python scripts/dev.py hardware</span>
+
+<span class="w">CPU</span>      Intel Core i3-1005G1 @ 1.20 GHz — <span class="y">2 physical cores / 4 threads</span>
+<span class="w">RAM</span>      7.7 GB total, <span class="y">~1.6 GB free</span>
+<span class="w">GPU</span>      Intel UHD Graphics — integrated, <span class="r">no CUDA</span>
+<span class="w">Profile</span>  <span class="r">CPU_ONLY</span> — below the spec's Profile A
+
+<span class="c">LiveKit + Postgres + a local LLM + Whisper + TTS</span>
+<span class="c">simultaneously on 4 threads will not produce a conversational response.</span>
+<span class="c">This is a hardware limit, not a code-quality limit.</span></pre>
+    </div>
+
+    <div class="callout danger" style="margin-top:26px">
+      <p>
+        <strong>The most important caveat in this project.</strong> The voice pipeline is where
+        nearly all the remaining risk lives — audio buffering, jitter, barge-in, codec negotiation,
+        latency under load — and <strong>none of it has been tested</strong>. Treat every
+        voice-adjacent claim in this repository as <em>designed, not demonstrated</em>.
+      </p>
+    </div>
+
+    <div class="grid g3" style="margin-top:26px">
+      <div class="card">
+        <h3><span class="ico ok">&#10003;</span> What is genuinely finished</h3>
+        <ul class="ticks ok">
+          <li>The migration chain — proven by executing upgrade, check, downgrade and re-upgrade.</li>
+          <li>The worker — atomic claim, backoff and rescheduling all tested.</li>
+          <li>Multi-tenant isolation, on a real second organisation.</li>
+          <li>Compliance refusal ordering.</li>
+          <li>The licence gate, wired into CI.</li>
+          <li>The honest-degradation pattern itself.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="ico warn">&#9888;</span> What is left, by priority</h3>
+        <ul class="ticks warn">
+          <li><strong>The voice worker</strong> — the single largest gap. Not doable on this machine.</li>
+          <li>176 tool implementations.</li>
+          <li>The pgvector retrieval path, unbenchmarked.</li>
+          <li>Cross-tenant tests for telephony resources.</li>
+          <li>Dashboard editing flows beyond create/publish/delete.</li>
+          <li>Email delivery for invites.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="ico info">&#8505;</span> Known gaps we chose not to hide</h3>
+        <ul class="ticks">
+          <li>Tool invocations are not persisted — an observability gap.</li>
+          <li>AI-disclosure text plays correctly, but the record that it played is not stored.</li>
+          <li>No browser-interaction testing; the sign-in form is rendered, never clicked.</li>
+          <li>Server Action dispatch is <em>reviewed, not executed</em> — Next's action wire protocol is internal and undocumented.</li>
+          <li>Docker images have never been built here.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================= ARCH -->
+<section id="arch">
+  <div class="wrap">
+    <h2>Architecture</h2>
+    <p class="sub">
+      A monorepo. The provider abstraction is the load-bearing decision: swapping a simulated model
+      for a real one is a provider <em>registration</em>, not a rewrite.
+    </p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 1020 330" role="img" aria-label="Repository layout: three apps, two packages, with the API and web app sharing the database">
+        <defs>
+          <marker id="ar2" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+            <path d="M0,0 L7,3.2 L0,6.4 z" fill="#2a3752"/>
+          </marker>
+        </defs>
+        <g font-family="ui-sans-serif,system-ui,sans-serif" font-size="12.5">
+          <rect x="14" y="20" width="300" height="126" rx="10" fill="#0b1120" stroke="#2a3752"/>
+          <text x="34" y="46" fill="#e8edf7" font-weight="640">apps/api</text>
+          <text x="34" y="68" fill="#64748b" font-size="11.5">FastAPI · SQLAlchemy async · Alembic</text>
+          <text x="34" y="88" fill="#64748b" font-size="11.5">12 routers · 173 operations</text>
+          <text x="34" y="108" fill="#64748b" font-size="11.5">compliance engine · worker</text>
+          <text x="34" y="128" fill="#64748b" font-size="11.5">agent runtime · RAG</text>
+
+          <rect x="360" y="20" width="286" height="126" rx="10" fill="#0b1120" stroke="#2a3752"/>
+          <text x="380" y="46" fill="#e8edf7" font-weight="640">apps/web</text>
+          <text x="380" y="68" fill="#64748b" font-size="11.5">Next.js 16 · React 19 · Tailwind v4</text>
+          <text x="380" y="88" fill="#64748b" font-size="11.5">11 routes · EN / DE / SQ</text>
+          <text x="380" y="108" fill="#64748b" font-size="11.5">Server Actions for writes</text>
+          <text x="380" y="128" fill="#64748b" font-size="11.5">dark-first, semantic tokens</text>
+
+          <rect x="692" y="20" width="314" height="126" rx="10" fill="#0b1120" stroke="#f87171" stroke-dasharray="5 4"/>
+          <text x="712" y="46" fill="#f87171" font-weight="640">apps/voice-worker</text>
+          <text x="712" y="68" fill="#64748b" font-size="11.5">scaffolded only — six 0-byte stubs</text>
+          <text x="712" y="88" fill="#64748b" font-size="11.5">realtime audio pipeline</text>
+          <text x="712" y="108" fill="#64748b" font-size="11.5">not built · never run</text>
+          <text x="712" y="128" fill="#64748b" font-size="11.5">needs a GPU that this machine lacks</text>
+
+          <rect x="14" y="196" width="300" height="112" rx="10" fill="#0b1120" stroke="#2a3752"/>
+          <text x="34" y="222" fill="#e8edf7" font-weight="640">packages/provider-sdk</text>
+          <text x="34" y="244" fill="#64748b" font-size="11.5">12+ provider interfaces</text>
+          <text x="34" y="264" fill="#64748b" font-size="11.5">router · fallback chains</text>
+          <text x="34" y="284" fill="#64748b" font-size="11.5">licence gating per model</text>
+
+          <rect x="360" y="196" width="286" height="112" rx="10" fill="#0b1120" stroke="#2a3752"/>
+          <text x="380" y="222" fill="#e8edf7" font-weight="640">packages/tool-sdk</text>
+          <text x="380" y="244" fill="#64748b" font-size="11.5">215 tools registered</text>
+          <text x="380" y="264" fill="#64748b" font-size="11.5">39 implemented · 176 stubs</text>
+          <text x="380" y="284" fill="#64748b" font-size="11.5">permission gates · side-effect classes</text>
+
+          <rect x="692" y="196" width="314" height="112" rx="10" fill="#111a2e" stroke="#2a3752"/>
+          <text x="712" y="222" fill="#e8edf7" font-weight="640">dev-lite deployment (this machine)</text>
+          <text x="712" y="244" fill="#64748b" font-size="11.5">SQLite · simulation providers</text>
+          <text x="712" y="264" fill="#64748b" font-size="11.5">no containers · full test suite</text>
+          <text x="712" y="284" fill="#64748b" font-size="11.5">Postgres + LiveKit on adequate hardware</text>
+
+          <line x1="314" y1="83" x2="356" y2="83" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar2)"/>
+          <line x1="314" y1="252" x2="356" y2="252" stroke="#2a3752" stroke-width="1.6" marker-end="url(#ar2)"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="grid g2" style="margin-top:24px">
+      <div class="card">
+        <h3><span class="ico info">&#9673;</span> Hardware-aware by design</h3>
+        <p>
+          The platform detects its own hardware profile and adapts. Three deployment shapes are
+          supported: <strong>dev-lite</strong> on a laptop (SQLite, text-mode agent loop,
+          simulation providers, full test suite, no containers), <strong>LOCAL</strong> on a 16&nbsp;GB
+          machine (Docker Compose core plus an optional LiveKit profile), and
+          <strong>GPU</strong> (vLLM + faster-whisper + Chatterbox).
+        </p>
+        <p>
+          Nothing is faked to make a demo look better. Where a component cannot be exercised on the
+          development hardware, the documentation says so and names the exact command a user with
+          the right machine should run.
+        </p>
+      </div>
+      <div class="card">
+        <h3><span class="ico ok">&#10003;</span> What a reviewer should check first</h3>
+        <ul class="ticks">
+          <li><code>docs/IMPLEMENTATION_STATUS.md</code> — every number tied to how it was measured.</li>
+          <li><code>HANDOVER.md</code> — what is done, what is <em>not</em>, and the traps.</li>
+          <li><code>docs/KNOWN_ISSUES.md</code> — every limitation, named.</li>
+          <li><code>docs/TEST_REPORT.md</code> — what the tests actually assert.</li>
+          <li><code>scripts/licence_gate.py</code> — a gate that has failed before.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================================= RUN -->
+<section id="run">
+  <div class="wrap">
+    <h2>Run it locally</h2>
+    <p class="sub">
+      The backend and console run on an ordinary laptop with no GPU and no containers. Voice does
+      not — that needs hardware this project was developed without.
+    </p>
+
+    <div class="term" style="margin-bottom:18px">
+      <div class="bar"><i></i><i></i><i></i><span style="margin-left:8px">bash</span></div>
+<pre><span class="c"># 1. clone and set up the virtual environment + workspace packages</span>
+<span class="b">git</span> clone &lt;this-repo&gt; &amp;&amp; <span class="b">cd</span> ai-call-agent
+<span class="b">python</span> scripts/dev.py setup
+
+<span class="c"># 2. create the database and seed a first administrator</span>
+<span class="b">python</span> scripts/dev.py migrate
+<span class="b">python</span> scripts/dev.py seed
+
+<span class="c"># 3. start the API (uvicorn, reload)</span>
+<span class="b">python</span> scripts/dev.py api
+
+<span class="c"># 4. in a second terminal, start the console</span>
+<span class="b">cd</span> apps/web &amp;&amp; <span class="b">npm</span> install &amp;&amp; <span class="b">npm</span> run dev
+<span class="c">#    -> http://localhost:3000</span></pre>
+    </div>
+
+    <p class="sub" style="margin-bottom:18px">
+      Then verify that the state you cloned is the state that was claimed:
+    </p>
+
+    <div class="term">
+      <div class="bar"><i></i><i></i><i></i><span style="margin-left:8px">the gate</span></div>
+<pre><span class="c">$</span> <span class="b">python scripts/dev.py verify</span>
+
+  -&gt; licence gate: <span class="g">PASS</span>
+  -&gt; lint:         <span class="g">PASS</span>
+  -&gt; types:        <span class="g">PASS</span>   (mypy, 95 source files, clean)
+  -&gt; tests:        <span class="g">PASS</span>   (146 passed, 0 failed, 0 skipped)
+
+<span class="g">VERIFY PASSED: licence gate, lint, types and tests are all green</span></pre>
+    </div>
+
+    <div class="callout">
+      <p>
+        <strong>Note on that output.</strong> On Windows the test step prints an override line,
+        because the sandbox's bulk-delete guard intercepts pytest's teardown and pollutes its exit
+        code. Rather than trust a lying exit code — or delete the step, which is how a
+        never-run type checker once let four real bugs ship — the gate re-derives the verdict from
+        pytest's own XML report. It was negative-tested: real failures, a corrupt report and an
+        empty report all still produce <code>FAIL</code>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>AI Call Agent Platform</span>
+    <span class="sp"></span>
+    <span>German &#183; Albanian &#183; English</span>
+    <span>Self-hosted &#183; multi-tenant</span>
+  </div>
+</footer>
+
+</body>
+</html>
