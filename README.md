@@ -228,9 +228,9 @@ The voice path is designed but has never been executed, and the development mach
 
 ## Ownership
 
-Built by **Altin Kalludra** ([@ulasmango-cmd](https://github.com/ulasmango-cmd)).
+Built by **[Altin Kalludra](https://github.com/ulasmango-cmd)**.
 
-- GitHub profile: [github.com/ulasmango-cmd](https://github.com/ulasmango-cmd)
+- GitHub profile: [Altin Kalludra](https://github.com/ulasmango-cmd)
 - Demo page: [ulasmango-cmd.github.io/ai-call-agent](https://ulasmango-cmd.github.io/ai-call-agent/)
 - Private production source: [ulasmango-cmd/ai-call-agent-source](https://github.com/ulasmango-cmd/ai-call-agent-source) *(private)*
 
