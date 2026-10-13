@@ -1,4 +1,4 @@
-**Altin Kalludra** · [Download CV (PDF)](https://github.com/ulasmango-cmd/atlascall-portfolio/raw/refs/heads/main/cv/Altin-Kalludra-CV.pdf)
+**Altin Kalludra** · [All projects](https://github.com/altink02/fxquant-portfolio/blob/main/PORTFOLIO.md) · [Download CV (PDF)](https://github.com/altink02/atlascall-portfolio/raw/refs/heads/main/cv/Altin-Kalludra-CV.pdf)
 
 <div align="center">
 
@@ -7,14 +7,14 @@
 **A self-hosted, multi-tenant, multilingual AI phone-agent platform** — where compliance is enforced in Python before a dial is attempted, never by asking the model for permission.
 
 [![Status](https://img.shields.io/badge/status-backend_complete_·_voice_not_built-blue?style=for-the-badge)](#project-status)
-[![Tests](https://img.shields.io/badge/tests-146_passing-2ea44f?style=for-the-badge)](#what-is-verified)
+[![Tests](https://img.shields.io/badge/tests-146_recorded-2ea44f?style=for-the-badge)](#what-is-verified)
 [![Source](https://img.shields.io/badge/source-private-lightgrey?style=for-the-badge)](#ownership)
 
 </div>
 
 > **This repository is a portfolio case study, not a source mirror.** The implementation is private and proprietary. See [Ownership](#ownership).
 
-📸 **[Browse the screenshots](#screenshots)** · 🖥️ **[Open the demo page](https://ulasmango-cmd.github.io/ai-call-agent/)**
+📸 **[Browse the screenshots](#screenshots)** · 🖥️ **[Open the demo page](https://altink02.github.io/ai-call-agent/)**
 
 ---
 
@@ -228,11 +228,11 @@ The voice path is designed but has never been executed, and the development mach
 
 ## Ownership
 
-Built by **[Altin Kalludra](https://github.com/ulasmango-cmd)**.
+Built by **[Altin Kalludra](https://github.com/altink02)**.
 
-- GitHub profile: [Altin Kalludra](https://github.com/ulasmango-cmd)
-- Demo page: [ulasmango-cmd.github.io/ai-call-agent](https://ulasmango-cmd.github.io/ai-call-agent/)
-- Private production source: [ulasmango-cmd/ai-call-agent-source](https://github.com/ulasmango-cmd/ai-call-agent-source) *(private)*
+- GitHub profile: [Altin Kalludra](https://github.com/altink02)
+- Demo page: [altink02.github.io/ai-call-agent](https://altink02.github.io/ai-call-agent/)
+- Private production source: [altink02/ai-call-agent-source](https://github.com/altink02/ai-call-agent-source) *(private)*
 
 ---
 

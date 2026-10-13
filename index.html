@@ -185,7 +185,7 @@ footer .sp{margin-left:auto}
       <a href="#how">How it works</a>
       <a href="#screens">Screens</a>
       <a href="#status">Honest status</a>
-      <a href="#run">Run it</a>
+      <a href="#run">Evaluate</a>
       <a href="#arch">Architecture</a>
     </nav>
   </div>
@@ -208,11 +208,11 @@ footer .sp{margin-left:auto}
     <div class="btns">
       <a class="btn primary" href="#status">See the honest status &#8595;</a>
       <a class="btn" href="#how">How a call flows</a>
-      <a class="btn" href="#run">Run it locally</a>
+      <a class="btn" href="#run">Evaluate the project</a>
     </div>
 
     <div class="strip">
-      <div class="ok"><div class="n">146</div><div class="l">Tests passing</div></div>
+      <div class="ok"><div class="n">146</div><div class="l">Tests recorded</div></div>
       <div class="ok"><div class="n">173</div><div class="l">API operations</div></div>
       <div class="ok"><div class="n">39</div><div class="l">Tools implemented</div></div>
       <div class="warn"><div class="n">176</div><div class="l">Tools still stubs</div></div>
@@ -736,56 +736,14 @@ footer .sp{margin-left:auto}
 <!-- ================================================================================= RUN -->
 <section id="run">
   <div class="wrap">
-    <h2>Run it locally</h2>
-    <p class="sub">
-      The backend and console run on an ordinary laptop with no GPU and no containers. Voice does
-      not — that needs hardware this project was developed without.
-    </p>
-
-    <div class="term" style="margin-bottom:18px">
-      <div class="bar"><i></i><i></i><i></i><span style="margin-left:8px">bash</span></div>
-<pre><span class="c"># 1. clone and set up the virtual environment + workspace packages</span>
-<span class="b">git</span> clone &lt;this-repo&gt; &amp;&amp; <span class="b">cd</span> ai-call-agent
-<span class="b">python</span> scripts/dev.py setup
-
-<span class="c"># 2. create the database and seed a first administrator</span>
-<span class="b">python</span> scripts/dev.py migrate
-<span class="b">python</span> scripts/dev.py seed
-
-<span class="c"># 3. start the API (uvicorn, reload)</span>
-<span class="b">python</span> scripts/dev.py api
-
-<span class="c"># 4. in a second terminal, start the console</span>
-<span class="b">cd</span> apps/web &amp;&amp; <span class="b">npm</span> install &amp;&amp; <span class="b">npm</span> run dev
-<span class="c">#    -> http://localhost:3000</span></pre>
+    <h2>Evaluate the project</h2>
+    <p class="sub">This public page is a visual case study. The application implementation is private, so cloning the portfolio repository does not provide a runnable backend or voice agent.</p>
+    <div class="cards">
+      <article class="card"><h3>Explore the interface</h3><p>Use the screen gallery above to inspect agent configuration, tool permissions, providers, contacts and system status.</p></article>
+      <article class="card"><h3>Read the engineering case study</h3><p><a href="https://github.com/altink02/ai-call-agent">Open the project README</a> for architecture, recorded tests, implemented tools and remaining voice-path limitations.</p></article>
+      <article class="card"><h3>See more work</h3><p><a href="https://github.com/altink02/fxquant-portfolio/blob/main/PORTFOLIO.md">Explore Altin Kalludra’s portfolio</a> or download the CV below.</p></article>
     </div>
-
-    <p class="sub" style="margin-bottom:18px">
-      Then verify that the state you cloned is the state that was claimed:
-    </p>
-
-    <div class="term">
-      <div class="bar"><i></i><i></i><i></i><span style="margin-left:8px">the gate</span></div>
-<pre><span class="c">$</span> <span class="b">python scripts/dev.py verify</span>
-
-  -&gt; licence gate: <span class="g">PASS</span>
-  -&gt; lint:         <span class="g">PASS</span>
-  -&gt; types:        <span class="g">PASS</span>   (mypy, 95 source files, clean)
-  -&gt; tests:        <span class="g">PASS</span>   (146 passed, 0 failed, 0 skipped)
-
-<span class="g">VERIFY PASSED: licence gate, lint, types and tests are all green</span></pre>
-    </div>
-
-    <div class="callout">
-      <p>
-        <strong>Note on that output.</strong> On Windows the test step prints an override line,
-        because the sandbox's bulk-delete guard intercepts pytest's teardown and pollutes its exit
-        code. Rather than trust a lying exit code — or delete the step, which is how a
-        never-run type checker once let four real bugs ship — the gate re-derives the verdict from
-        pytest's own XML report. It was negative-tested: real failures, a corrupt report and an
-        empty report all still produce <code>FAIL</code>.
-      </p>
-    </div>
+    <div class="callout"><p><strong>Verification context.</strong> The previously recorded 146-test result concerns the private backend. It is historical evidence, not a fresh test run or proof that the voice path works end to end.</p></div>
   </div>
 </section>
 
@@ -796,7 +754,7 @@ footer .sp{margin-left:auto}
     <span>German &#183; Albanian &#183; English</span>
     <span>Self-hosted &#183; multi-tenant</span>
   </div>
-<p style="margin-top:14px">Built by Altin Kalludra · <a href="https://github.com/ulasmango-cmd/atlascall-portfolio/raw/refs/heads/main/cv/Altin-Kalludra-CV.pdf">Download CV (PDF)</a></p>
+<p style="margin-top:14px">Built by Altin Kalludra · <a href="https://github.com/altink02/atlascall-portfolio/raw/refs/heads/main/cv/Altin-Kalludra-CV.pdf">Download CV (PDF)</a></p>
 </footer>
 
 </body>
